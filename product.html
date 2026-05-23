@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product — Shiftable</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f4f8;color:#0f172a;font-family:'Manrope',sans-serif;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 2rem;background:#0f172a;position:sticky;top:0;z-index:100;gap:1rem;}
+.nav-left{display:flex;align-items:center;gap:1.5rem;flex:1;}
+.logo{text-decoration:none;}
+.logo-shift{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;}
+.logo-able{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#38bdf8;}
+.logo-arrow{font-size:.9rem;color:#38bdf8;position:relative;top:-3px;}
+.nav-links a{font-size:.82rem;color:#94a3b8;text-decoration:none;margin-left:1.5rem;}
+.nav-links a:hover{color:#fff;}
+.nav-right{display:flex;align-items:center;gap:.75rem;}
+.nav-cart{font-size:.82rem;color:#fff;text-decoration:none;padding:.4rem .85rem;border:1.5px solid #334155;}
+.btn-nav-ghost{font-size:.82rem;color:#94a3b8;text-decoration:none;padding:.4rem .85rem;border:1.5px solid #334155;}
+.btn-nav-primary{font-size:.82rem;background:#38bdf8;color:#fff;text-decoration:none;padding:.4rem .9rem;font-weight:600;}
+.nav-username{font-size:.82rem;font-weight:600;color:#fff;padding:.4rem .75rem;border:1.5px solid #334155;cursor:pointer;}
+.nav-dropdown{position:absolute;top:100%;right:0;background:#fff;border:1px solid #e2e8f0;min-width:160px;display:none;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:200;}
+.nav-user-menu{position:relative;}
+.nav-user-menu:hover .nav-dropdown{display:flex;}
+.nav-dropdown a{padding:.65rem 1rem;font-size:.85rem;color:#475569;text-decoration:none;}
+.nav-dropdown a:hover{background:#f0f9ff;color:#38bdf8;}
+
+.breadcrumb{background:#fff;border-bottom:1px solid #e2e8f0;padding:.75rem 2rem;}
+.breadcrumb a{font-size:.82rem;color:#64748b;text-decoration:none;}
+.breadcrumb a:hover{color:#38bdf8;}
+.breadcrumb span{font-size:.82rem;color:#94a3b8;margin:0 .4rem;}
+
+.main{max-width:1280px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:1fr 360px;gap:2rem;align-items:start;}
+@media(max-width:900px){.main{grid-template-columns:1fr;}}
+
+/* LEFT - PRODUCT INFO */
+.prod-left{}
+.prod-header{background:#fff;border:1px solid #e2e8f0;padding:2rem;margin-bottom:1.5rem;}
+.prod-img{height:220px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);display:flex;align-items:center;justify-content:center;font-size:5rem;margin-bottom:1.5rem;}
+.prod-badges{display:flex;gap:.5rem;margin-bottom:.75rem;}
+.prod-badge{font-size:.68rem;font-weight:700;padding:3px 10px;}
+.prod-badge.original{color:#ea580c;background:#ffedd5;}
+.prod-badge.cat{color:#0284c7;background:#e0f2fe;}
+.prod-name{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.35rem;letter-spacing:-.02em;}
+.prod-seller{font-size:.85rem;color:#64748b;margin-bottom:1rem;}
+.prod-seller span{color:#38bdf8;font-weight:600;}
+.prod-desc{font-size:.95rem;color:#475569;line-height:1.75;}
+
+.prod-features{background:#fff;border:1px solid #e2e8f0;padding:1.75rem;margin-bottom:1.5rem;}
+.prod-features h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid #e2e8f0;}
+.feat-list{display:flex;flex-direction:column;gap:.6rem;}
+.feat-item{display:flex;align-items:flex-start;gap:.75rem;font-size:.9rem;color:#475569;}
+.feat-item::before{content:'✓';color:#38bdf8;font-weight:700;font-size:1rem;flex-shrink:0;margin-top:1px;}
+
+/* RIGHT - BUY BOX */
+.buy-box{background:#fff;border:1px solid #e2e8f0;padding:1.75rem;position:sticky;top:80px;}
+.buy-box-price{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:#0f172a;margin-bottom:.25rem;}
+.buy-box-per{font-size:.82rem;color:#64748b;margin-bottom.75rem;}
+.buy-box-note{font-size:.8rem;color:#16a34a;font-weight:600;margin:.75rem 0;}
+.buy-divider{height:1px;background:#e2e8f0;margin:1.25rem 0;}
+.cart-btn{width:100%;background:#38bdf8;color:#fff;border:none;padding:1rem;font-family:'Manrope',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:background .2s;margin-bottom:.75rem;}
+.cart-btn:hover{background:#0ea5e9;}
+.buy-now-btn{width:100%;background:#0f172a;color:#fff;border:none;padding:1rem;font-family:'Manrope',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;transition:background .2s;}
+.buy-now-btn:hover{background:#1e293b;}
+.buy-box-meta{margin-top:1.25rem;}
+.buy-meta-item{display:flex;justify-content:space-between;font-size:.82rem;padding:.4rem 0;border-bottom:1px solid #f1f5f9;}
+.buy-meta-item:last-child{border:none;}
+.buy-meta-key{color:#64748b;}
+.buy-meta-val{font-weight:600;color:#0f172a;}
+
+.seller-card{background:#fff;border:1px solid #e2e8f0;padding:1.5rem;margin-top:1rem;}
+.seller-card h4{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom.5rem;padding-bottom:.5rem;border-bottom:1px solid #e2e8f0;}
+.seller-avatar{width:44px;height:44px;background:linear-gradient(135deg,#38bdf8,#0284c7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:1rem;margin-bottom:.75rem;}
+.seller-name{font-weight:700;font-size:.9rem;margin-bottom:.2rem;}
+.seller-type{font-size:.72rem;color:#38bdf8;text-transform:uppercase;letter-spacing:.06em;}
+
+.loading{text-align:center;padding:4rem;color:#64748b;font-size:.95rem;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="logo"><span class="logo-shift">Shift</span><span class="logo-able">able</span><span class="logo-arrow">↑</span></a>
+  </div>
+  <div class="nav-links">
+    <a href="marketplace.html">Marketplace</a>
+    <a href="shiftable-systems.html">Shiftable Systems</a>
+    <a href="consulting.html">Consulting</a>
+  </div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-cart">🛒 (<span id="cartCount">0</span>)</a>
+    <div id="navAuth">
+      <a href="auth.html" class="btn-nav-ghost">Log In</a>
+      <a href="auth.html?tab=signup" class="btn-nav-primary">Sign Up</a>
+    </div>
+  </div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="index.html">Home</a><span>›</span>
+  <a href="marketplace.html">Marketplace</a><span>›</span>
+  <span id="breadcrumbName">Loading...</span>
+</div>
+
+<div id="loadingState" class="loading">Loading product...</div>
+
+<div class="main" id="productContent" style="display:none;">
+  <div class="prod-left">
+    <div class="prod-header">
+      <div class="prod-img" id="prodImg"></div>
+      <div class="prod-badges" id="prodBadges"></div>
+      <div class="prod-name" id="prodName"></div>
+      <div class="prod-seller" id="prodSeller"></div>
+      <div class="prod-desc" id="prodDesc"></div>
+    </div>
+    <div class="prod-features">
+      <h3>What's Included</h3>
+      <div class="feat-list" id="prodFeats"></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="buy-box">
+      <div class="buy-box-price" id="boxPrice"></div>
+      <div class="buy-box-per" id="boxPer"></div>
+      <div class="buy-box-note">✓ Setup included in first month</div>
+      <div class="buy-divider"></div>
+      <button class="cart-btn" id="cartBtn">Add to Cart</button>
+      <div class="buy-box-meta">
+        <div class="buy-meta-item"><span class="buy-meta-key">Implementation</span><span class="buy-meta-val" id="metaImpl">See description</span></div>
+        <div class="buy-meta-item"><span class="buy-meta-key">Setup Fee</span><span class="buy-meta-val">Included</span></div>
+        <div class="buy-meta-item"><span class="buy-meta-key">Billing</span><span class="buy-meta-val" id="metaBilling">Monthly</span></div>
+        <div class="buy-meta-item"><span class="buy-meta-key">Sold by</span><span class="buy-meta-val" id="metaSeller"></span></div>
+      </div>
+    </div>
+    <div class="seller-card">
+      <h4>About the Seller</h4>
+      <div class="seller-avatar" id="sellerAvatar"></div>
+      <div class="seller-name" id="sellerName"></div>
+      <div class="seller-type" id="sellerType"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (!id) { window.location.href = 'marketplace.html'; return; }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const profile = await getProfile(session.user.id);
+    document.getElementById('navAuth').innerHTML = `
+      <div class="nav-user-menu">
+        <span class="nav-username">${session.user.email.split('@')[0]}</span>
+        <div class="nav-dropdown">
+          <a href="${profile && (profile.account_type === 'seller' || profile.account_type === 'both') ? 'seller-dashboard.html' : 'buyer-dashboard.html'}">Dashboard</a>
+          <a href="#" onclick="handleLogout()">Log Out</a>
+        </div>
+      </div>`;
+    updateCartCount();
+  }
+
+  const { data: p } = await sb.from('products').select('*, profiles(full_name, account_type)').eq('id', id).single();
+  if (!p) { window.location.href = 'marketplace.html'; return; }
+
+  document.title = p.name + ' — Shiftable';
+  document.getElementById('breadcrumbName').textContent = p.name;
+  document.getElementById('prodImg').textContent = getIcon(p.icon);
+  document.getElementById('prodName').textContent = p.name;
+
+  const sellerName = p.is_shiftable_original ? 'Shiftable Systems' : (p.profiles ? p.profiles.full_name : 'Seller');
+  document.getElementById('prodSeller').innerHTML = `Sold by <span>${sellerName}</span>`;
+  document.getElementById('prodDesc').textContent = p.description || '';
+
+  document.getElementById('prodBadges').innerHTML = `
+    ${p.is_shiftable_original ? '<span class="prod-badge original">Shiftable Original</span>' : '<span class="prod-badge cat">Verified Seller</span>'}
+    ${(p.category || []).map(c => `<span class="prod-badge cat">${c}</span>`).join('')}
+  `;
+
+  document.getElementById('prodFeats').innerHTML = (p.features || []).map(f => `
+    <div class="feat-item">${f}</div>
+  `).join('');
+
+  document.getElementById('boxPrice').textContent = '$' + p.price;
+  document.getElementById('boxPer').textContent = '/' + p.price_type;
+  document.getElementById('metaBilling').textContent = p.price_type === 'month' ? 'Monthly subscription' : 'One-time';
+  document.getElementById('metaSeller').textContent = sellerName;
+
+  const initials = sellerName.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+  document.getElementById('sellerAvatar').textContent = initials;
+  document.getElementById('sellerName').textContent = sellerName;
+  document.getElementById('sellerType').textContent = p.is_shiftable_original ? 'Shiftable Original Creator' : 'Independent Seller';
+
+  document.getElementById('cartBtn').onclick = () => addToCart(p.id);
+
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('productContent').style.display = 'grid';
+}
+
+init();
+</script>
+</body>
+</html>

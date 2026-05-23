@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shiftable Systems — AI Built for Trade Businesses</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f4f8;color:#0f172a;font-family:'Manrope',sans-serif;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 2rem;background:#0f172a;position:sticky;top:0;z-index:100;gap:1rem;}
+.nav-left{display:flex;align-items:center;gap:1.5rem;flex:1;}
+.logo{display:flex;align-items:center;text-decoration:none;}
+.logo-shift{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.02em;}
+.logo-able{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#38bdf8;letter-spacing:-.02em;}
+.logo-arrow{font-size:.9rem;color:#38bdf8;position:relative;top:-3px;}
+.nav-search{display:flex;flex:1;max-width:500px;}
+.nav-search input{flex:1;border:none;padding:.6rem 1rem;font-size:.9rem;outline:none;font-family:'Manrope',sans-serif;}
+.nav-search button{background:#38bdf8;color:#fff;border:none;padding:.6rem 1.25rem;cursor:pointer;font-weight:600;}
+.nav-links a{font-size:.82rem;color:#94a3b8;text-decoration:none;font-weight:500;margin-left:1.5rem;}
+.nav-links a:hover{color:#fff;}
+.nav-right{display:flex;align-items:center;gap:.75rem;}
+.nav-cart{font-size:.82rem;color:#fff;text-decoration:none;padding:.4rem .85rem;border:1.5px solid #334155;}
+.btn-nav-ghost{font-size:.82rem;color:#94a3b8;text-decoration:none;padding:.4rem .85rem;border:1.5px solid #334155;}
+.btn-nav-primary{font-size:.82rem;background:#38bdf8;color:#fff;text-decoration:none;padding:.4rem .9rem;font-weight:600;}
+.nav-username{font-size:.82rem;font-weight:600;color:#fff;padding:.4rem .75rem;border:1.5px solid #334155;cursor:pointer;}
+.nav-dropdown{position:absolute;top:100%;right:0;background:#fff;border:1px solid #e2e8f0;min-width:160px;display:none;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:200;}
+.nav-user-menu{position:relative;}
+.nav-user-menu:hover .nav-dropdown{display:flex;}
+.nav-dropdown a{padding:.65rem 1rem;font-size:.85rem;color:#475569;text-decoration:none;}
+.nav-dropdown a:hover{background:#f0f9ff;color:#38bdf8;}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:4rem 2rem;color:#fff;text-align:center;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:.65rem;letter-spacing:.2em;color:#38bdf8;text-transform:uppercase;margin-bottom:1rem;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,3.5rem);font-weight:800;margin-bottom:1rem;letter-spacing:-.02em;}
+.hero h1 span{color:#38bdf8;}
+.hero p{color:#94a3b8;max-width:520px;margin:0 auto 2rem;line-height:1.7;}
+.bundle-cta{display:inline-flex;align-items:center;gap:1.5rem;background:rgba(56,189,248,.1);border:1.5px solid rgba(56,189,248,.3);padding:1.25rem 2rem;margin-top:1rem;}
+.bundle-text{text-align:left;}
+.bundle-text strong{display:block;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#fff;}
+.bundle-text span{font-size:.82rem;color:#94a3b8;}
+.bundle-price{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:#38bdf8;}
+.bundle-per{font-size:.72rem;color:#94a3b8;}
+
+/* MAIN */
+.main{max-width:1280px;margin:0 auto;padding:2.5rem 2rem;}
+.section-header{margin-bottom:2rem;}
+.section-header h2{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:.35rem;}
+.section-header p{font-size:.9rem;color:#64748b;}
+
+/* PRODUCT CARDS - FULL WIDTH STYLE */
+.systems-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;margin-bottom:3rem;}
+.scard{background:#fff;border:1px solid #e2e8f0;overflow:hidden;transition:box-shadow .2s;}
+.scard:hover{box-shadow:0 4px 24px rgba(0,0,0,.1);border-color:#38bdf8;}
+.sc-top{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);padding:2rem;text-align:center;}
+.sc-icon{font-size:3.5rem;margin-bottom:.5rem;}
+.sc-badge{font-size:.65rem;font-weight:700;color:#ea580c;background:#ffedd5;padding:2px 10px;display:inline-block;}
+.sc-body{padding:1.5rem;}
+.sc-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:.5rem;}
+.sc-desc{font-size:.85rem;color:#64748b;line-height:1.65;margin-bottom:1.25rem;}
+.sc-features{margin-bottom:1.25rem;}
+.sc-feat{font-size:.8rem;color:#475569;display:flex;align-items:flex-start;gap:.4rem;margin-bottom:.3rem;}
+.sc-feat::before{content:'✓';color:#38bdf8;font-weight:700;flex-shrink:0;}
+.sc-footer{display:flex;justify-content:space-between;align-items:center;padding-top:1.25rem;border-top:1px solid #e2e8f0;}
+.sc-price{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#0f172a;}
+.sc-per{font-size:.72rem;color:#64748b;}
+.sc-actions{display:flex;gap:.5rem;}
+.sc-cart{background:#38bdf8;color:#fff;border:none;padding:.6rem 1.25rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;transition:background .2s;}
+.sc-cart:hover{background:#0ea5e9;}
+.sc-view{background:transparent;color:#475569;border:1.5px solid #e2e8f0;padding:.6rem .85rem;font-size:.82rem;cursor:pointer;font-family:'Manrope',sans-serif;transition:all .2s;}
+.sc-view:hover{border-color:#38bdf8;color:#38bdf8;}
+
+/* BUNDLE CARD */
+.bundle-card{background:#0f172a;color:#fff;padding:2.5rem;display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:center;margin-bottom:3rem;}
+.bc-tag{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.15em;color:#38bdf8;text-transform:uppercase;margin-bottom:.5rem;}
+.bc-name{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;margin-bottom:.5rem;}
+.bc-desc{font-size:.88rem;color:#94a3b8;max-width:480px;line-height:1.65;margin-bottom:1.25rem;}
+.bc-includes{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem;}
+.bc-tag-item{font-size:.72rem;color:#38bdf8;border:1px solid rgba(56,189,248,.3);padding:3px 10px;}
+.bc-right{text-align:right;}
+.bc-price{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:#38bdf8;line-height:1;}
+.bc-per{font-size:.78rem;color:#94a3b8;margin-bottom:.35rem;}
+.bc-save{font-size:.8rem;color:#4ade80;font-weight:600;margin-bottom:1.25rem;}
+.bc-cart{background:#38bdf8;color:#fff;border:none;padding:.85rem 2rem;font-size:.9rem;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;display:block;width:100%;transition:background .2s;}
+.bc-cart:hover{background:#0ea5e9;}
+
+/* WHY SHIFTABLE */
+.why-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:#e2e8f0;border:1px solid #e2e8f0;margin-bottom:3rem;}
+.why-item{background:#fff;padding:1.75rem;}
+.why-icon{font-size:1.75rem;margin-bottom:.75rem;}
+.why-title{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:.4rem;}
+.why-desc{font-size:.82rem;color:#64748b;line-height:1.6;}
+
+footer{background:#0f172a;color:#94a3b8;padding:2.5rem 2rem;margin-top:2rem;}
+.footer-inner{max-width:1280px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem;}
+.fl{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;color:#fff;}
+.fl span{color:#38bdf8;}
+.footer-links{display:flex;gap:1.5rem;}
+.footer-links a{font-size:.82rem;color:#94a3b8;text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:#38bdf8;}
+.footer-copy{font-size:.78rem;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="logo"><span class="logo-shift">Shift</span><span class="logo-able">able</span><span class="logo-arrow">↑</span></a>
+    <div class="nav-search">
+      <input type="text" id="navSearch" placeholder="Search systems..." onkeydown="if(event.key==='Enter')window.location.href='marketplace.html?q='+this.value">
+      <button onclick="window.location.href='marketplace.html?q='+document.getElementById('navSearch').value">Search</button>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="marketplace.html">Marketplace</a>
+    <a href="consulting.html">Consulting</a>
+  </div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-cart">🛒 (<span id="cartCount">0</span>)</a>
+    <div id="navAuth">
+      <a href="auth.html" class="btn-nav-ghost">Log In</a>
+      <a href="auth.html?tab=signup" class="btn-nav-primary">Sign Up</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Shiftable Systems</div>
+  <h1>AI Built for <span>Trade Businesses</span></h1>
+  <p>Our own AI systems designed, built, and implemented by Shiftable. Everything your trade business needs to automate, estimate, and get paid — starting at $150/month.</p>
+  <div class="bundle-cta" onclick="addBundleToCart()">
+    <div class="bundle-text">
+      <strong>Get All 4 Systems</strong>
+      <span>Best value — save $100/month</span>
+    </div>
+    <div>
+      <div class="bundle-price">$500</div>
+      <div class="bundle-per">/month</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- BUNDLE -->
+  <div class="bundle-card" id="bundleCard">
+    <div>
+      <div class="bc-tag">Best Value</div>
+      <div class="bc-name">Shiftable Systems Bundle</div>
+      <p class="bc-desc">Get all 4 AI systems in one subscription. The complete automation stack for your trade business — at a discount.</p>
+      <div class="bc-includes">
+        <span class="bc-tag-item">AI Receptionist</span>
+        <span class="bc-tag-item">Estimate Engine</span>
+        <span class="bc-tag-item">Material Calculator</span>
+        <span class="bc-tag-item">Job Payment Planner</span>
+      </div>
+    </div>
+    <div class="bc-right">
+      <div class="bc-price">$500</div>
+      <div class="bc-per">/month</div>
+      <div class="bc-save">Save $100/month vs individual</div>
+      <button class="bc-cart" id="bundleCartBtn" onclick="addBundleToCart()">Add Bundle to Cart</button>
+    </div>
+  </div>
+
+  <!-- INDIVIDUAL SYSTEMS -->
+  <div class="section-header">
+    <h2>Individual Systems — $150/month each</h2>
+    <p>Pick only what your business needs</p>
+  </div>
+  <div class="systems-grid" id="systemsGrid"></div>
+
+  <!-- WHY SHIFTABLE -->
+  <div class="section-header">
+    <h2>Why Shiftable Systems?</h2>
+  </div>
+  <div class="why-grid">
+    <div class="why-item">
+      <div class="why-icon">⚡</div>
+      <div class="why-title">Live in 3–5 Days</div>
+      <div class="why-desc">We build and implement your system. You're operational fast, not months later.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">🔨</div>
+      <div class="why-title">Trade Business First</div>
+      <div class="why-desc">Every system is built specifically for contractors, roofers, plumbers, and tradespeople.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">💳</div>
+      <div class="why-title">One Simple Price</div>
+      <div class="why-desc">$150/month per system. Setup included in your first month. No hidden fees.</div>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">🤖</div>
+      <div class="why-title">Custom to Your Business</div>
+      <div class="why-desc">Your brand, your pricing, your services — every system is configured for you specifically.</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="fl">Shift<span>able</span></div>
+    <div class="footer-links">
+      <a href="marketplace.html">Marketplace</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="auth.html">Account</a>
+    </div>
+    <div class="footer-copy">© 2026 Shiftable</div>
+  </div>
+</footer>
+
+<script>
+let bundleProduct = null;
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const profile = await getProfile(session.user.id);
+    document.getElementById('navAuth').innerHTML = `
+      <div class="nav-user-menu">
+        <span class="nav-username">${session.user.email.split('@')[0]}</span>
+        <div class="nav-dropdown">
+          <a href="${profile && (profile.account_type === 'seller' || profile.account_type === 'both') ? 'seller-dashboard.html' : 'buyer-dashboard.html'}">Dashboard</a>
+          <a href="#" onclick="handleLogout()">Log Out</a>
+        </div>
+      </div>`;
+    updateCartCount();
+  }
+
+  const { data } = await sb.from('products').select('*').eq('is_shiftable_original', true).eq('status', 'approved');
+  const products = data || [];
+  bundleProduct = products.find(p => p.category && p.category.includes('bundle'));
+  const individual = products.filter(p => !p.category || !p.category.includes('bundle'));
+
+  if (bundleProduct) {
+    document.getElementById('bundleCartBtn').onclick = () => addToCart(bundleProduct.id);
+  }
+
+  document.getElementById('systemsGrid').innerHTML = individual.map(p => `
+    <div class="scard">
+      <div class="sc-top">
+        <div class="sc-icon">${getIcon(p.icon)}</div>
+        <span class="sc-badge">Shiftable Original</span>
+      </div>
+      <div class="sc-body">
+        <div class="sc-name">${p.name}</div>
+        <div class="sc-desc">${p.description || ''}</div>
+        <div class="sc-features">
+          ${(p.features || []).map(f => `<div class="sc-feat">${f}</div>`).join('')}
+        </div>
+        <div class="sc-footer">
+          <div>
+            <div class="sc-price">$${p.price}</div>
+            <div class="sc-per">/${p.price_type}</div>
+          </div>
+          <div class="sc-actions">
+            <button class="sc-cart" onclick="addToCart('${p.id}')">Add to Cart</button>
+            <button class="sc-view" onclick="window.location.href='product.html?id=${p.id}'">View</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addBundleToCart() {
+  if (bundleProduct) addToCart(bundleProduct.id);
+}
+
+init();
+</script>
+</body>
+</html>

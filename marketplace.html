@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace — Shiftable</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#f0f4f8;color:#0f172a;font-family:'Manrope',sans-serif;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 2rem;background:#0f172a;position:sticky;top:0;z-index:100;gap:1rem;}
+.nav-left{display:flex;align-items:center;gap:1.5rem;flex:1;}
+.logo{display:flex;align-items:center;text-decoration:none;flex-shrink:0;}
+.logo-shift{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.02em;}
+.logo-able{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:#38bdf8;letter-spacing:-.02em;}
+.logo-arrow{font-size:.9rem;color:#38bdf8;position:relative;top:-3px;}
+.nav-search{display:flex;flex:1;max-width:600px;}
+.nav-search input{flex:1;border:none;padding:.6rem 1rem;font-size:.9rem;outline:none;font-family:'Manrope',sans-serif;}
+.nav-search button{background:#38bdf8;color:#fff;border:none;padding:.6rem 1.25rem;cursor:pointer;font-weight:600;transition:background .2s;}
+.nav-search button:hover{background:#0ea5e9;}
+.nav-links a{font-size:.82rem;color:#94a3b8;text-decoration:none;font-weight:500;margin-left:1.5rem;}
+.nav-links a:hover{color:#fff;}
+.nav-right{display:flex;align-items:center;gap:.75rem;}
+.nav-cart{font-size:.82rem;color:#fff;text-decoration:none;padding:.4rem .85rem;border:1.5px solid #334155;}
+.btn-nav-ghost{font-size:.82rem;color:#94a3b8;text-decoration:none;padding:.4rem .85rem;border:1.5px solid #334155;}
+.btn-nav-ghost:hover{color:#fff;}
+.btn-nav-primary{font-size:.82rem;background:#38bdf8;color:#fff;text-decoration:none;padding:.4rem .9rem;font-weight:600;}
+.nav-username{font-size:.82rem;font-weight:600;color:#fff;padding:.4rem .75rem;border:1.5px solid #334155;cursor:pointer;}
+.nav-dropdown{position:absolute;top:100%;right:0;background:#fff;border:1px solid #e2e8f0;min-width:160px;display:none;flex-direction:column;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:200;}
+.nav-user-menu{position:relative;}
+.nav-user-menu:hover .nav-dropdown{display:flex;}
+.nav-dropdown a{padding:.65rem 1rem;font-size:.85rem;color:#475569;text-decoration:none;}
+.nav-dropdown a:hover{background:#f0f9ff;color:#38bdf8;}
+
+.page-header{background:#0f172a;padding:2rem;color:#fff;}
+.page-header h1{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.35rem;}
+.page-header p{color:#94a3b8;font-size:.92rem;}
+
+.layout{max-width:1280px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:240px 1fr;gap:2rem;}
+@media(max-width:768px){.layout{grid-template-columns:1fr;}}
+
+/* SIDEBAR */
+.sidebar{background:#fff;border:1px solid #e2e8f0;padding:1.5rem;height:fit-content;}
+.sidebar h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid #e2e8f0;}
+.filter-group{margin-bottom:1.5rem;}
+.filter-group label{display:block;font-size:.78rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;}
+.filter-check{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;cursor:pointer;}
+.filter-check input{accent-color:#38bdf8;}
+.filter-check span{font-size:.85rem;color:#475569;}
+.price-inputs{display:flex;gap:.5rem;align-items:center;}
+.price-inputs input{flex:1;border:1.5px solid #e2e8f0;padding:.4rem .6rem;font-size:.82rem;outline:none;font-family:'Manrope',sans-serif;}
+.price-inputs input:focus{border-color:#38bdf8;}
+.price-inputs span{font-size:.82rem;color:#94a3b8;}
+.apply-btn{width:100%;background:#38bdf8;color:#fff;border:none;padding:.6rem;font-size:.85rem;font-weight:600;cursor:pointer;margin-top:1rem;font-family:'Manrope',sans-serif;}
+.apply-btn:hover{background:#0ea5e9;}
+
+/* PRODUCTS */
+.products-area{}
+.sort-bar{background:#fff;border:1px solid #e2e8f0;padding:.75rem 1.25rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.sort-bar span{font-size:.85rem;color:#475569;}
+.sort-select{border:1.5px solid #e2e8f0;padding:.35rem .75rem;font-size:.85rem;outline:none;font-family:'Manrope',sans-serif;color:#475569;}
+.sort-select:focus{border-color:#38bdf8;}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}
+.pcard{background:#fff;border:1px solid #e2e8f0;padding:1.25rem;transition:box-shadow .2s;cursor:pointer;display:flex;flex-direction:column;}
+.pcard:hover{box-shadow:0 4px 20px rgba(0,0,0,.1);border-color:#38bdf8;}
+.pc-img{height:130px;background:linear-gradient(135deg,#f0f9ff,#e0f2fe);display:flex;align-items:center;justify-content:center;font-size:2.75rem;margin-bottom:1rem;}
+.pc-badge{font-size:.65rem;font-weight:700;color:#0284c7;background:#e0f2fe;padding:2px 8px;display:inline-block;margin-bottom:.5rem;}
+.pc-badge.original{color:#ea580c;background:#ffedd5;}
+.pc-name{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:.25rem;}
+.pc-seller{font-size:.75rem;color:#38bdf8;margin-bottom:.5rem;}
+.pc-desc{font-size:.8rem;color:#64748b;line-height:1.55;margin-bottom:1rem;flex:1;}
+.pc-price{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:#0f172a;}
+.pc-per{font-size:.72rem;color:#64748b;margin-bottom:.85rem;}
+.pc-actions{display:flex;gap:.5rem;}
+.pc-cart{flex:1;background:#38bdf8;color:#fff;border:none;padding:.55rem;font-size:.8rem;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;}
+.pc-cart:hover{background:#0ea5e9;}
+.pc-view{background:transparent;color:#475569;border:1.5px solid #e2e8f0;padding:.55rem .75rem;font-size:.8rem;cursor:pointer;font-family:'Manrope',sans-serif;}
+.pc-view:hover{border-color:#38bdf8;color:#38bdf8;}
+.empty{text-align:center;padding:4rem;color:#64748b;grid-column:1/-1;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="logo"><span class="logo-shift">Shift</span><span class="logo-able">able</span><span class="logo-arrow">↑</span></a>
+    <div class="nav-search">
+      <input type="text" id="navSearch" placeholder="Search AI systems..." onkeydown="if(event.key==='Enter')applySearch()">
+      <button onclick="applySearch()">Search</button>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="shiftable-systems.html">Shiftable Systems</a>
+    <a href="consulting.html">Consulting</a>
+  </div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-cart">🛒 (<span id="cartCount">0</span>)</a>
+    <div id="navAuth">
+      <a href="auth.html" class="btn-nav-ghost">Log In</a>
+      <a href="auth.html?tab=signup" class="btn-nav-primary">Sign Up</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <h1>AI Marketplace</h1>
+  <p>Browse all verified AI systems from Shiftable and independent sellers</p>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h3>Filter</h3>
+    <div class="filter-group">
+      <label>Category</label>
+      <div class="filter-check"><input type="checkbox" value="trade" onchange="applyFilters()"><span>Trade Business</span></div>
+      <div class="filter-check"><input type="checkbox" value="automation" onchange="applyFilters()"><span>Automation</span></div>
+      <div class="filter-check"><input type="checkbox" value="finance" onchange="applyFilters()"><span>Finance</span></div>
+      <div class="filter-check"><input type="checkbox" value="communication" onchange="applyFilters()"><span>Communication</span></div>
+      <div class="filter-check"><input type="checkbox" value="bundle" onchange="applyFilters()"><span>Bundles</span></div>
+    </div>
+    <div class="filter-group">
+      <label>Source</label>
+      <div class="filter-check"><input type="checkbox" id="filterOriginal" onchange="applyFilters()"><span>Shiftable Originals</span></div>
+      <div class="filter-check"><input type="checkbox" id="filterThirdParty" onchange="applyFilters()"><span>Third Party</span></div>
+    </div>
+    <div class="filter-group">
+      <label>Price Range</label>
+      <div class="price-inputs">
+        <input type="number" id="priceMin" placeholder="Min">
+        <span>–</span>
+        <input type="number" id="priceMax" placeholder="Max">
+      </div>
+      <button class="apply-btn" onclick="applyFilters()">Apply Filters</button>
+    </div>
+  </aside>
+
+  <div class="products-area">
+    <div class="sort-bar">
+      <span id="resultCount">Loading...</span>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="newest">Newest First</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+    <div class="products-grid" id="productsGrid"></div>
+  </div>
+</div>
+
+<script>
+let allProducts = [];
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q') || '';
+  const cat = params.get('cat') || '';
+  if (q) document.getElementById('navSearch').value = q;
+  if (cat) {
+    document.querySelectorAll('.filter-check input').forEach(cb => {
+      if (cb.value === cat) cb.checked = true;
+    });
+  }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const profile = await getProfile(session.user.id);
+    document.getElementById('navAuth').innerHTML = `
+      <div class="nav-user-menu">
+        <span class="nav-username">${session.user.email.split('@')[0]}</span>
+        <div class="nav-dropdown">
+          <a href="${profile && (profile.account_type === 'seller' || profile.account_type === 'both') ? 'seller-dashboard.html' : 'buyer-dashboard.html'}">Dashboard</a>
+          <a href="#" onclick="handleLogout()">Log Out</a>
+        </div>
+      </div>`;
+    updateCartCount();
+  }
+
+  const { data } = await sb.from('products').select('*, profiles(full_name)').eq('status', 'approved');
+  allProducts = data || [];
+  applyFilters();
+}
+
+function applySearch() {
+  const q = document.getElementById('navSearch').value;
+  window.location.href = 'marketplace.html?q=' + q;
+}
+
+function applyFilters() {
+  const q = document.getElementById('navSearch').value.toLowerCase();
+  const checkedCats = [...document.querySelectorAll('.filter-check input[value]:checked')].map(c => c.value);
+  const filterOriginal = document.getElementById('filterOriginal').checked;
+  const filterThirdParty = document.getElementById('filterThirdParty').checked;
+  const priceMin = parseFloat(document.getElementById('priceMin').value) || 0;
+  const priceMax = parseFloat(document.getElementById('priceMax').value) || Infinity;
+  const sort = document.getElementById('sortSelect').value;
+
+  let filtered = allProducts.filter(p => {
+    const matchQ = !q || p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q));
+    const matchCat = !checkedCats.length || checkedCats.some(c => p.category && p.category.includes(c));
+    const matchSource = (!filterOriginal && !filterThirdParty) || (filterOriginal && p.is_shiftable_original) || (filterThirdParty && !p.is_shiftable_original);
+    const matchPrice = p.price >= priceMin && p.price <= priceMax;
+    return matchQ && matchCat && matchSource && matchPrice;
+  });
+
+  if (sort === 'price-low') filtered.sort((a,b) => a.price - b.price);
+  else if (sort === 'price-high') filtered.sort((a,b) => b.price - a.price);
+  else if (sort === 'name') filtered.sort((a,b) => a.name.localeCompare(b.name));
+  else filtered.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+  document.getElementById('resultCount').textContent = `${filtered.length} product${filtered.length !== 1 ? 's' : ''} found`;
+  renderProducts(filtered);
+}
+
+function renderProducts(products) {
+  const grid = document.getElementById('productsGrid');
+  if (!products.length) {
+    grid.innerHTML = `<div class="empty">No products match your filters</div>`;
+    return;
+  }
+  grid.innerHTML = products.map(p => `
+    <div class="pcard">
+      <div class="pc-img">${getIcon(p.icon)}</div>
+      ${p.is_shiftable_original ? '<span class="pc-badge original">Shiftable Original</span>' : '<span class="pc-badge">Verified Seller</span>'}
+      <div class="pc-name">${p.name}</div>
+      <div class="pc-seller">${p.is_shiftable_original ? 'by Shiftable Systems' : 'by ' + (p.profiles ? p.profiles.full_name : 'Seller')}</div>
+      <div class="pc-desc">${p.description ? p.description.substring(0,100) + '...' : ''}</div>
+      <div class="pc-price">$${p.price}</div>
+      <div class="pc-per">/${p.price_type}</div>
+      <div class="pc-actions">
+        <button class="pc-cart" onclick="addToCart('${p.id}')">Add to Cart</button>
+        <button class="pc-view" onclick="window.location.href='product.html?id=${p.id}'">View</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+init();
+</script>
+</body>
+</html>
